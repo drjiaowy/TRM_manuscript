@@ -1,4 +1,4 @@
-#Fig.1C 1D 1F & Fig.S3 
+#Fig.1C 1D 1F & Fig.S4 
 REP_total <- function(data, pre_donor, pre_reci){
   l <- length(data)
   Rep <- list()
@@ -48,55 +48,56 @@ shannon.entropy <- function(p){
   -sum(log2(p.norm)*p.norm)
 }
 
-#Fig.2A Fig.5A 5B Fig.S9A
-Share <- function(data, gut, MLN, donor){
-  matrix <- as.data.frame(matrix(nrow = 4, ncol = ncol(data)))
-  rownames(matrix) <- c("gutonlyFre%", "MLNonlyFre%", "sharedFre%", "unmappableFre%")
+#Fig.2A Fig.S6A
+Share <- function(data, A, B, donor){
+  matrix <- as.data.frame(matrix(nrow = 5, ncol = ncol(data)))
+  rownames(matrix) <- c("A", "B", "ABshared", "unmappable", "donor")
   colnames(matrix) <- colnames(data)
   
-  error <- intersect(donor, union(gut, MLN))
-  gutonly <- setdiff(gut, union(MLN, donor))
-  MLNonly <- setdiff(MLN, union(gut, donor))
-  share <- setdiff(intersect(gut, MLN),donor)
-  donor <- setdiff(donor, union(gut, MLN))
+  error <- intersect(donor, union(A, B))
+  Aonly <- setdiff(A, union(B, donor))
+  Bonly <- setdiff(B, union(A, donor))
+  share <- setdiff(intersect(A, B),donor)
+  donor <- setdiff(donor, union(A, B))
   data <- data[!(rownames(data) %in% c(error, donor)),]
-  unmappable <- setdiff(rownames(data), c(gut, MLN, donor))
+  unmappable <- setdiff(rownames(data), c(A, B, donor))
   data1 <- normalize(data)
   
   for (i in 1:ncol(data)){
-    matrix[1,i] <- sum(data1[gutonly,i])*100
-    matrix[2,i] <- sum(data1[MLNonly,i])*100
+    matrix[1,i] <- sum(data1[Aonly,i])*100
+    matrix[2,i] <- sum(data1[Bonly,i])*100
     matrix[3,i] <- sum(data1[share,i])*100
     matrix[4,i] <- sum(data1[unmappable,i])*100
+    matrix[5,i] <- sum(data1[donor,i])*100
   }
   return(matrix)
 }
 
-#Fig.2B
-Share_v1 <- function(data, gut, MLN_spleen, donor){
+#Fig.2B Fig. 5A, Fig.5B, Table S4, Table S5
+Share_v1 <- function(data, A, B, donor){
   l <- ncol(data)
   matrix <- matrix(nrow = l, ncol = 12)  
-  colnames(matrix) <- c( "gutonly Pre-transplant clones detected", "gutonly post-Tx clones undetected", 
-                         "MLN_spleenonly Pre-transplant clones detected", "MLN_spleenonly post-Tx clones undetected",
+  colnames(matrix) <- c( "Aonly Pre-transplant clones detected", "Aonly post-Tx clones undetected", 
+                         "Bonly Pre-transplant clones detected", "Bonly post-Tx clones undetected",
                          "shared Pre-transplant clones detected", "shared post-Tx clones undetected", 
-                         "gutonly MLN_spleenonly Odds Ratio", "gutonly MLN_spleenonly P-value", 
-                         "gutonly shared Odds Ratio", "gutonly shared P-value",
-                         "MLN_spleenonly shared Odds Ratio", "MLN_spleenonly shared P-value")
+                         "Aonly Bonly Odds Ratio", "Aonly Bonly P-value", 
+                         "Aonly shared Odds Ratio", "Aonly shared P-value",
+                         "Bonly shared Odds Ratio", "Bonly shared P-value")
   rownames(matrix) <- colnames(data)
   
-  error <- intersect(donor, union(gut, MLN_spleen))
-  gutonly <- setdiff(gut, union(MLN_spleen, donor))
-  MLN_spleenonly <- setdiff(MLN_spleen, union(gut, donor))
-  share <- setdiff(intersect(gut, MLN_spleen),donor)
-  donor <- setdiff(donor, union(gut, MLN_spleen))
+  error <- intersect(donor, union(A, B))
+  Aonly <- setdiff(A, union(B, donor))
+  Bonly <- setdiff(B, union(A, donor))
+  share <- setdiff(intersect(A, B),donor)
+  donor <- setdiff(donor, union(A, B))
   data <- data[!(rownames(data) %in% c(error, donor)),]
-  unmappable <- setdiff(rownames(data), c(gut, MLN_spleen, donor))
+  unmappable <- setdiff(rownames(data), c(A, B, donor))
   
   for (i in 1:l) {
-    matrix[i,1] <- length(gutonly)
-    matrix[i,2] <- length1(data[gutonly,i])
-    matrix[i,3] <- length(MLN_spleenonly)
-    matrix[i,4] <- length1(data[MLN_spleenonly,i])
+    matrix[i,1] <- length(Aonly)
+    matrix[i,2] <- length1(data[Aonly,i])
+    matrix[i,3] <- length(Bonly)
+    matrix[i,4] <- length1(data[Bonly,i])
     matrix[i,5] <- length(share)
     matrix[i,6] <- length1(data[share,i])
     a <- fisher.test(matrix(c(matrix[i,2], matrix[i,1], matrix[i,4], matrix[i,3]),nrow=2))
@@ -153,7 +154,7 @@ dfPlot = ggplot(data, aes(x = Tissue, y = Blood, fill = Type)) +
 
 print(dfPlot)
 
-#Fig.3C 3D Fig.4D 4E
+#Fig.3C Fig.4D 4E Fig. S8B
 cosine <- function(p, q){
   l <- length(p)
   a <- 0
@@ -168,7 +169,7 @@ cosine <- function(p, q){
   return(d)
 }
 
-#Fig.4B 4C Fig.S6
+#Fig.4B 4C Fig.S7 Fig.S8A
 data <- data[,c(ileum, colon,native_colon)]
 
 ileum_only <- rownames(data[data$ileum >0 & (data$colon == 0 & data$native_colon == 0), ])
@@ -193,7 +194,7 @@ matrix[1,7] <- sum(data[native_only, 3])
 matrix[1,8] <- sum(data[c(colon_native_colon_share, ileum_native_colon_share), 3])
 matrix[1,9] <- sum(data[triple_share, 3])
 
-#Fig.S7 Fig.S8 & HvG/NonHvG define
+#HvG/NonHvG define in Fig.5 & Fig.S9
 rcd4 <-  data[,c("R4U","R4L")]
 rcd4 <-  normalize(rcd4)
 rCD4HVG <-  rownames(rcd4[rcd4[,2]>0.00002 & rcd4[,2] > rcd4[,1]*2,])
@@ -214,5 +215,11 @@ CD4HVG <- setdiff(rCD4HVG,c(rCD4NonHVG,rCD4GVH,rCD4NonGVH,rCD8HVG,rCD8NonHVG,rCD
 CD4NonHVG <- setdiff(rCD4NonHVG,c(rCD4HVG,rCD4GVH,rCD4NonGVH,rCD8HVG,rCD8NonHVG,rCD8GVH,rCD8NonGVH))
 CD8HVG <- setdiff(rCD8HVG,c(rCD4NonHVG,rCD4GVH,rCD4NonGVH,rCD4HVG,rCD8NonHVG,rCD8GVH,rCD8NonGVH))
 CD8NonHVG <- setdiff(rCD8NonHVG,c(rCD4HVG,rCD4GVH,rCD4NonGVH,rCD8HVG,rCD4NonHVG,rCD8GVH,rCD8NonGVH))
+
+#ITx pts bulk sequencing data match path_data in Fig.5 & Fig.S9
+library(dplyr)
+library(tidyverse)
+data <- unique(left_join(data, path_data))
+
 
 ##Thank you!
