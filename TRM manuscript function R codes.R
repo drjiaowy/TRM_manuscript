@@ -73,7 +73,7 @@ Share <- function(data, A, B, donor){
   return(matrix)
 }
 
-#Fig.2B Fig. 5A, Fig.5B, Table S4, Table S5
+#Fig.2B Fig. 5A, Fig.5B, Table S4, Table S6
 Share_v1 <- function(data, A, B, donor){
   l <- ncol(data)
   matrix <- matrix(nrow = l, ncol = 12)  
@@ -113,7 +113,95 @@ Share_v1 <- function(data, A, B, donor){
   return(matrix)
 }
 
-#Fig.2C 2D Fig.3B
+#Fig.S7A
+library(tidyverse)
+
+data_share <- data[share,]
+A <- as.data.frame(table(data_share[,1]))
+colnames(aaa) <- c("copy_number", "A") 
+
+B <- as.data.frame(table(data_share[,2]))
+colnames(bbb) <- c("copy_number", "B") 
+
+C <- as.data.frame(table(data_share[,3]))
+colnames(ccc) <- c("copy_number", "C") 
+
+matrix <- full_join(A, full_join(B, C))
+
+
+data_gut_only <- data[gut_only,]
+A <- as.data.frame(table(data_gut_only[,1]))
+colnames(aaa) <- c("copy_number", "A") 
+
+B <- as.data.frame(table(data_gut_only[,2]))
+colnames(bbb) <- c("copy_number", "B") 
+
+C <- as.data.frame(table(data_gut_only[,3]))
+colnames(ccc) <- c("copy_number", "C") 
+
+matrix <- full_join(A, full_join(B, C))
+
+
+data_lymphoid_only <- data[gut_only,]
+A <- as.data.frame(table(data_lymphoidt_only[,1]))
+colnames(aaa) <- c("copy_number", "A") 
+
+B <- as.data.frame(table(data_lymphoid_only[,2]))
+colnames(bbb) <- c("copy_number", "B") 
+
+C <- as.data.frame(table(data_lymphoid_only[,3]))
+colnames(ccc) <- c("copy_number", "C") 
+
+matrix <- full_join(A, full_join(B, C))
+
+#Fig.S7B Table S5
+Share_v1_R4U_R8U <- function(data, gut, lymphoid, donor, R4U_R8U){
+  l <- ncol(data)
+  matrix <- matrix(nrow = l, ncol = 12)  
+  colnames(matrix) <- c( "gutonly Pre-transplant clones detected", "gutonly post-Tx clones undetected", 
+                         "lymphoidonly Pre-transplant clones detected", "lymphoidonly post-Tx clones undetected",
+                         "shared Pre-transplant clones detected", "shared post-Tx clones undetected", 
+                         "gutonly lymphoidonly Odds Ratio", "gutonly lymphoidonly P-value", 
+                         "gutonly shared Odds Ratio", "gutonly shared P-value",
+                         "lymphoidonly shared Odds Ratio", "lymphoidonly shared P-value")
+  rownames(matrix) <- colnames(data)
+  
+  error <- intersect(donor, union(gut, lymphoid))
+  gutonly <- setdiff(gut, union(lymphoid, donor))
+  lymphoidonly <- setdiff(lymphoid, union(gut, donor))
+  share <- setdiff(intersect(gut, lymphoid),donor)
+  donor <- setdiff(donor, union(gut, lymphoid))
+  data <- data[!(rownames(data) %in% c(error, donor)),]
+  unmappable <- setdiff(rownames(data), c(gut, lymphoid, donor))
+  R4U_R8U2 <- intersect(R4U_R8U, lymphoidonly)
+  share <- intersect(R4U_R8U, share)
+  
+  share <- intersect(share, rownames(data[(data[,1] + data[,2])==1 & data[,5]==1, ]))
+  R4U_R8U2 <- intersect(R4U_R8U2, rownames(data[(data[,1] + data[,2]) ==1, ]))
+  gutonly <- intersect(gutonly, rownames(data[data[,5]==1, ]))
+  
+  matrix[,1] <- length1(data[gutonly,5])
+  matrix[,3] <- length1(data[R4U_R8U2,1])
+  matrix[,5] <- length1(data[share,5])
+  
+  for (i in 1:l) {
+    matrix[i,2] <- length1(data[gutonly,i])
+    matrix[i,4] <- length1(data[R4U_R8U2,i])
+    matrix[i,6] <- length1(data[share,i])
+    a <- fisher.test(matrix(c(matrix[i,2], matrix[i,1], matrix[i,4], matrix[i,3]),nrow=2))
+    matrix[i,7] <- a[[3]]
+    matrix[i,8] <- a[[1]]
+    b <- fisher.test(matrix(c(matrix[i,2], matrix[i,1], matrix[i,6], matrix[i,5]),nrow=2))
+    matrix[i,9] <- b[[3]]
+    matrix[i,10] <- b[[1]]
+    c <- fisher.test(matrix(c(matrix[i,4], matrix[i,3], matrix[i,6], matrix[i,5]),nrow=2))
+    matrix[i,11] <- c[[3]]
+    matrix[i,12] <- c[[1]]
+  }
+  return(matrix)
+}
+
+#Fig.2C 2D 
 matrix <- as.data.frame(matrix(nrow=length(data) , ncol=length(data) ))
 colnames(matrix) <- colnames(data)
 rownames(matrix) <- colnames(data)
@@ -154,7 +242,17 @@ dfPlot = ggplot(data, aes(x = Tissue, y = Blood, fill = Type)) +
 
 print(dfPlot)
 
-#Fig.3C Fig.4D 4E Fig. S8B
+#Fig.3B
+matrix <- as.data.frame(matrix(nrow=length(data) , ncol=length(data) ))
+colnames(matrix) <- colnames(data)
+rownames(matrix) <- colnames(data)
+for (m in 1:ncol(matrix)){
+  for (n in 1:nrow(matrix)) {
+    matrix[n,m] <- sum(data[intersect(rownames(data)[data[,n]>0], rownames(data)[data[,m]>0]),n])/sum(data[,n])*100
+  }
+}
+
+#Fig.3C Fig.4D 4E Fig. S9B
 cosine <- function(p, q){
   l <- length(p)
   a <- 0
@@ -169,7 +267,7 @@ cosine <- function(p, q){
   return(d)
 }
 
-#Fig.4B 4C Fig.S7 Fig.S8A
+#Fig.4B 4C Fig.S8 Fig.S9A
 data <- data[,c(ileum, colon,native_colon)]
 
 ileum_only <- rownames(data[data$ileum >0 & (data$colon == 0 & data$native_colon == 0), ])
@@ -194,7 +292,7 @@ matrix[1,7] <- sum(data[native_only, 3])
 matrix[1,8] <- sum(data[c(colon_native_colon_share, ileum_native_colon_share), 3])
 matrix[1,9] <- sum(data[triple_share, 3])
 
-#HvG/NonHvG define in Fig.5 & Fig.S9
+#HvG/NonHvG define in Fig.5 & Fig.S10
 rcd4 <-  data[,c("R4U","R4L")]
 rcd4 <-  normalize(rcd4)
 rCD4HVG <-  rownames(rcd4[rcd4[,2]>0.00002 & rcd4[,2] > rcd4[,1]*2,])
@@ -216,7 +314,7 @@ CD4NonHVG <- setdiff(rCD4NonHVG,c(rCD4HVG,rCD4GVH,rCD4NonGVH,rCD8HVG,rCD8NonHVG,
 CD8HVG <- setdiff(rCD8HVG,c(rCD4NonHVG,rCD4GVH,rCD4NonGVH,rCD4HVG,rCD8NonHVG,rCD8GVH,rCD8NonGVH))
 CD8NonHVG <- setdiff(rCD8NonHVG,c(rCD4HVG,rCD4GVH,rCD4NonGVH,rCD8HVG,rCD4NonHVG,rCD8GVH,rCD8NonGVH))
 
-#ITx pts bulk sequencing data match path_data in Fig.5 & Fig.S9
+#ITx pts bulk sequencing data match path_data in Fig.5 & Fig.S10
 library(dplyr)
 library(tidyverse)
 data <- unique(left_join(data, path_data))
