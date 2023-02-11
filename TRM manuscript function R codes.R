@@ -20,6 +20,30 @@ REP_total <- function(data, pre_donor, pre_reci){
   return(matrix)
 }
 
+#example for function REP_total
+#D4U pre-Tx donor unstimulated CD4
+#D8U pre-Tx donor unstimulated CD8
+#D4L pre-Tx donor CD4 CDSE low from donor vs recipient MLR
+#D8L pre-Tx donor CD8 CDSE low from donor vs recipient MLR
+#R4U pre-Tx recipient unstimulated CD4
+#R8U pre-Tx recipient unstimulated CD8
+#R4L pre-Tx recipient CD4 CDSE low from recipient vs donor MLR
+#R8L pre-Tx recipient CD8 CDSE low from recipient vs donor MLR
+colnames(Pt14_reorder)
+[1] "Sum..Templates."                     "Present.In"                          "Pt14 D4U --- 168380"                 "Pt14 D8U --- 172991"                
+[5] "Pt14 D4L --- 107684"                 "Pt14 D8L --- 83220"                  "Pt14 R4U --- 218304"                 "Pt14 R8U --- 169987"                
+[9] "Pt14 R4L --- 73163"                  "Pt14 R8L --- 111507"                 "Pt14 PBMC POD30 --- 33681"           "Pt14 PBMC POD456 --- 50353"         
+[13] "Pt14 PBMC POD1764 --- 23755"         "Pt14 ileum POD9 --- 9392"            "Pt14 ileum POD16 --- 50586"          "Pt14 ileum POD156 --- 9970"         
+[17] "Pt14 ileum POD226 --- 27639"         "Pt14 ileum POD527 --- 22714"         "Pt14 ileum POD717 --- 46427"         "Pt14 ileum POD1764 --- 47833"       
+[21] "Pt14 colon POD527 --- 830"           "Pt14 colon POD717 --- 13482"         "Pt14 colon POD1764 --- 855"          "Pt14 native colon POD527 --- 32172" 
+[25] "Pt14 native colon POD717 --- 7311"   "Pt14 native colon  POD1764 --- 3075" "Pt14 PBMC POD456 R4U --- 18655"      "Pt14 PBMC POD456 R4L --- 1810"      
+[29] "Pt14 PBMC POD456 R8U --- 14693"      "Pt14 PBMC POD456 R8L --- 791"
+
+data <- Pt14_reorder[,c(14,15,16,17,18,19)]
+pre_donor <- rownames(Pt14_reorder[Pt14_reorder[,3]>0|Pt14_reorder[,4]>0|Pt14_reorder[,5]>0|Pt14_reorder[,6]>0, ])
+pre_reci <- rownames(Pt14_reorder[Pt14_reorder[,7]>0|Pt14_reorder[,8]>0|Pt14_reorder[,9]>0|Pt14_reorder[,10]>0, ])
+matrix <- REP_total(data, pre_donor, pre_reci)
+
 #Fig.1E 1G
 JSD_total <- function(data){
   l <- length(data)
@@ -73,6 +97,24 @@ Share <- function(data, A, B, donor){
   return(matrix)
 }
 
+#example for function Share
+colnames(Pt20_new)
+[1] "Sum..Templates."                    "Present.In"                         "Pt20 SP D4U --- 86451"              "Pt20 SP D8U --- 56329"             
+[5] "Pt20 SP D4L --- 67406"              "Pt20 SP D8L --- 57582"              "Pt20 MLN R4U --- 186655"            "Pt20 MLN R8U --- 157716"           
+[9] "Pt20 MLN R4L --- 76200"             "Pt20 MLN R8L --- 60132"             "Pt20 native colon POD0 --- 212129"  "Pt20 PBMC POD16 --- 46030"         
+[13] "Pt20 PBMC POD26 --- 906"            "Pt20 PBMC POD39 --- 33287"          "Pt20 PBMC POD68 --- 14467"          "Pt20 PBMC POD110 --- 25611"        
+[17] "Pt20 PBMC POD242 --- 16612"         "Pt20 PBMC POD306 --- 20737"         "Pt20 PBMC POD524 T --- 68925"       "Pt20 PBMC POD635 --- 79855"        
+[21] "Pt20 PBMC POD796 --- 20218"         "Pt20 ileum POD16 --- 479"           "Pt20 ileum POD23 --- 30225"         "Pt20 ileum POD37 --- 108"          
+[25] "Pt20 ileum POD68 --- 3510"          "Pt20 ileum POD104 --- 41422"        "Pt20 ileum POD250 T --- 3497"       "Pt20 ileum POD306 --- 25379"       
+[29] "Pt20 ileum POD523 T --- 4419"       "Pt20 ileum POD796 --- 371119"       "Pt20 BM POD125 T --- 27452"         "Pt20 BM POD521 T --- 15616"        
+[33] "Pt20 colon POD250 T --- 1291"       "Pt20 native colon POD250 T --- 116"
+
+data <- Pt20_new[,c(25,26,27,28,29,30)]
+lymphoid <- rownames(Pt20_new[Pt20_new[,7]>0|Pt20_new[,8]>0|Pt20_new[,9]>0|Pt20_new[,10]>0, ])
+gut <- rownames(Pt20_new[Pt20_new[,11]>0, ])
+donor <- rownames(Pt20_new[Pt20_new[,3]>0|Pt20_new[,4]>0|Pt20_new[,5]>0|Pt20_new[,6]>0, ])
+matrix <- Share(data, lymphoid, gut, donor)
+
 #Fig.2B Fig. 5A, Fig.5B, Table S4, Table S6
 Share_v1 <- function(data, A, B, donor){
   l <- ncol(data)
@@ -112,6 +154,24 @@ Share_v1 <- function(data, A, B, donor){
   }
   return(matrix)
 }
+
+#example for function Share_v1
+colnames(Pt20_new)
+[1] "Sum..Templates."                    "Present.In"                         "Pt20 SP D4U --- 86451"              "Pt20 SP D8U --- 56329"             
+[5] "Pt20 SP D4L --- 67406"              "Pt20 SP D8L --- 57582"              "Pt20 MLN R4U --- 186655"            "Pt20 MLN R8U --- 157716"           
+[9] "Pt20 MLN R4L --- 76200"             "Pt20 MLN R8L --- 60132"             "Pt20 native colon POD0 --- 212129"  "Pt20 PBMC POD16 --- 46030"         
+[13] "Pt20 PBMC POD26 --- 906"            "Pt20 PBMC POD39 --- 33287"          "Pt20 PBMC POD68 --- 14467"          "Pt20 PBMC POD110 --- 25611"        
+[17] "Pt20 PBMC POD242 --- 16612"         "Pt20 PBMC POD306 --- 20737"         "Pt20 PBMC POD524 T --- 68925"       "Pt20 PBMC POD635 --- 79855"        
+[21] "Pt20 PBMC POD796 --- 20218"         "Pt20 ileum POD16 --- 479"           "Pt20 ileum POD23 --- 30225"         "Pt20 ileum POD37 --- 108"          
+[25] "Pt20 ileum POD68 --- 3510"          "Pt20 ileum POD104 --- 41422"        "Pt20 ileum POD250 T --- 3497"       "Pt20 ileum POD306 --- 25379"       
+[29] "Pt20 ileum POD523 T --- 4419"       "Pt20 ileum POD796 --- 371119"       "Pt20 BM POD125 T --- 27452"         "Pt20 BM POD521 T --- 15616"        
+[33] "Pt20 colon POD250 T --- 1291"       "Pt20 native colon POD250 T --- 116"
+
+data <- Pt20_new[,c(25,26,27,28,29,30)]
+lymphoid <- rownames(Pt20_new[Pt20_new[,7]>0|Pt20_new[,8]>0|Pt20_new[,9]>0|Pt20_new[,10]>0, ])
+gut <- rownames(Pt20_new[Pt20_new[,11]>0, ])
+donor <- rownames(Pt20_new[Pt20_new[,3]>0|Pt20_new[,4]>0|Pt20_new[,5]>0|Pt20_new[,6]>0, ])
+matrix <- Share_v1(data, lymphoid, gut, donor)
 
 #Fig.S7A
 library(tidyverse)
@@ -153,6 +213,67 @@ C <- as.data.frame(table(data_lymphoid_only[,3]))
 colnames(ccc) <- c("copy_number", "C") 
 
 matrix <- full_join(A, full_join(B, C))
+
+#example 
+names(Pt18_new)
+data <- Pt18_new[,c(23,24,25)]
+colnames(data)
+[1] "Pt18 ileum POD105 --- 6742"  "Pt18 ileum POD307 --- 11692" "Pt18 ileum POD357 --- 96857"
+donor <- rownames(Pt18_new[Pt18_new[,3]>0|Pt18_new[,4]>0|Pt18_new[,5]>0|Pt18_new[,6]>0, ])
+gut <- rownames(Pt18_new[Pt18_new[,11]>0, ])
+lymphoid <- rownames(Pt18_new[Pt18_new[,7]>0|Pt18_new[,8]>0|Pt18_new[,9]>0|Pt18_new[,10]>0, ])
+
+error <- intersect(donor, union(gut, lymphoid))
+gutonly <- setdiff(gut, union(lymphoid, donor))
+lymphoidonly <- setdiff(lymphoid, union(gut, donor))
+share <- setdiff(intersect(gut, lymphoid),donor)
+donor <- setdiff(donor, union(gut, lymphoid))
+data <- data[!(rownames(data) %in% c(error, donor)),]
+
+sub <- rownames(Pt18_new[Pt18_new[,7]>0|Pt18_new[,8]>0, ])
+sub2 <- intersect(sub, lymphoidonly)
+sub2_share <- intersect(sub, share)
+
+data_sub2_lymphoidonly <- data[sub2,]
+A <- as.data.frame(table(data_sub2_lymphoidonly[,1]))
+colnames(A) <- c("copy_number", "Pt18 ileum POD105 --- 6742") 
+
+B <- as.data.frame(table(data_sub2_lymphoidonly[,2]))
+colnames(B) <- c("copy_number", "Pt18 ileum POD307 --- 11692") 
+
+C <- as.data.frame(table(data_sub2_lymphoidonly[,3]))
+colnames(C) <- c("copy_number", "Pt18 ileum POD357 --- 96857") 
+
+matrix <- full_join(A, full_join(B, C))
+matrix$copy_number <- as.numeric(as.character(matrix$copy_number))
+
+
+data_sub2_gutonly <- data[gutonly,]
+A <- as.data.frame(table(data_sub2_gutonly[,1]))
+colnames(A) <- c("copy_number", "Pt18 ileum POD105 --- 6742") 
+
+B <- as.data.frame(table(data_sub2_gutonly[,2]))
+colnames(B) <- c("copy_number", "Pt18 ileum POD307 --- 11692") 
+
+C <- as.data.frame(table(data_sub2_gutonly[,3]))
+colnames(C) <- c("copy_number", "Pt18 ileum POD357 --- 96857") 
+
+matrix <- full_join(A, full_join(B, C))
+matrix$copy_number <- as.numeric(as.character(matrix$copy_number))
+
+
+data_sub2_share <- data[sub2_share,]
+A <- as.data.frame(table(data_sub2_share[,1]))
+colnames(A) <- c("copy_number", "Pt18 ileum POD105 --- 6742") 
+
+B <- as.data.frame(table(data_sub2_share[,2]))
+colnames(B) <- c("copy_number", "Pt18 ileum POD307 --- 11692") 
+
+C <- as.data.frame(table(data_sub2_share[,3]))
+colnames(C) <- c("copy_number", "Pt18 ileum POD357 --- 96857") 
+
+matrix <- full_join(A, full_join(B, C))
+matrix$copy_number <- as.numeric(as.character(matrix$copy_number))
 
 #Fig.S7B Table S5
 Share_v1_R4U_R8U <- function(data, gut, lymphoid, donor, R4U_R8U){
@@ -201,6 +322,23 @@ Share_v1_R4U_R8U <- function(data, gut, lymphoid, donor, R4U_R8U){
   return(matrix)
 }
 
+#example for function Share_v1_R4U_R8U
+names(Pt18_new)
+[1] "Sum..Templates."                    "Present.In"                         "Pt18 SP D4U --- 80509"              "Pt18 SP D8U --- 37862"             
+[5] "Pt18 SP D4L --- 43547"              "Pt18 SP D8L --- 80174"              "Pt18 SP R4U --- 41891"              "Pt18 SP R8U --- 145868"            
+[9] "Pt18 SP R4L --- 46336"              "Pt18 SP R8L --- 82850"              "Pt18 intestine POD0 --- 4628"       "Pt18 PBMC POD5 --- 1159"           
+[13] "Pt18 PBMC POD7 --- 1817"            "Pt18 PBMC POD14 --- 28858"          "Pt18 PBMC POD28 --- 40747"          "Pt18 PBMC POD98 --- 108893"        
+[17] "Pt18 PBMC POD314 --- 57969"         "Pt18 PBMC POD357 --- 26279"         "Pt18 PBMC POD357 D --- 2578"        "Pt18 ileum POD5.7 --- 6326"        
+[21] "Pt18 ileum POD18 --- 3934"          "Pt18 ileum POD35 --- 456"           "Pt18 ileum POD105 --- 6742"         "Pt18 ileum POD307 --- 11692"       
+[25] "Pt18 ileum POD357 --- 96857"        "Pt18 stomach POD357 --- 17204"      "Pt18 duodenum POD357 --- 7284"      "Pt18 colon POD357 --- 14076"       
+[29] "Pt18 native colon POD357 --- 17731" "Pt18 BM POD357 --- 4298"            "Pt18 BM POD357 D --- 1430"   
+data <- Pt18_new[,c(7,8,9,10, 11, 23,24,25)]
+donor <- rownames(Pt18_new[Pt18_new[,3]>0|Pt18_new[,4]>0|Pt18_new[,5]>0|Pt18_new[,6]>0, ])
+gut <- rownames(Pt18_new[Pt18_new[,11]>0, ])
+lymphoid <- rownames(Pt18_new[Pt18_new[,7]>0|Pt18_new[,8]>0|Pt18_new[,9]>0|Pt18_new[,10]>0, ])
+sub <- rownames(Pt18_new[Pt18_new[,7]>0|Pt18_new[,8]>0, ])
+matrix <- Share_v1_R4U_R8U(data, gut, lymphoid, donor, sub)
+
 #Fig.2C 2D 
 matrix <- as.data.frame(matrix(nrow=length(data) , ncol=length(data) ))
 colnames(matrix) <- colnames(data)
@@ -218,13 +356,52 @@ library(ggplot2)
 data <- normalize(data)
 data <- data[which(rowSums(data) > 0),]
 data$Type <- NA
-data[(data$Blood>0) & (data$Tissue == 0), c("Type")] <- c("Blood_Only")
-data[(data$Blood == 0) & (data$Tissue>0), c("Type")] <- c("ileum_Only")
-data[(data$Blood>0) & (data$Tissue>0), c("Type")] <- c("Shared")
-SharedinGut <- sum(data[data$Type == c("Shared"),c("Tissue")])/sum(data[,c("Tissue")])*100
-SharedinBlood <- sum(data[data$Type == c("Shared"),c("Blood")])/sum(data[,c("Blood")])*100
-data[data$Blood == 0, c("Blood")] <- 0.000001
-data[data$Tissue == 0, c("Tissue")] <- 0.000001
+data[(data$blood>0) & (data$tissue == 0), c("Type")] <- c("Blood_Only")
+data[(data$blood == 0) & (data$tissue>0), c("Type")] <- c("ileum_Only")
+data[(data$blood>0) & (data$tissue>0), c("Type")] <- c("Shared")
+SharedinGut <- sum(data[data$Type == c("Shared"),c("tissue")])/sum(data[,c("tissue")])*100
+data[, c("Blood")] <- data[, c("blood")]
+data[, c("Tissue")] <- data[, c("tissue")]
+data[data$blood == 0, c("Blood")] <- 0.000001
+data[data$tissue == 0, c("Tissue")] <- 0.000001
+
+
+color <- c("#F08080","#90EE90","#ADD8E6")
+
+dfPlot = ggplot(data, aes(x = Tissue, y = Blood, fill = Type)) +
+  geom_point(size=6.5, shape=21, show.legend = F, color="gray20") + 
+  scale_colour_manual(values = color, aesthetics = "fill")+
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = 
+                       element_blank(),panel.grid.minor = element_blank()) +theme(axis.line = 
+                                                                                    element_line(colour = "black"), axis.title = element_text(size=20, family="Arial",
+                                                                                                                                              color="black", face = "bold", vjust=0.5, hjust=0.5), axis.text = 
+                                                                                    element_text(size = 20, family="Arial", color = "black", face="bold", vjust=0.5,hjust=0.5)) + 
+  scale_y_log10(limits =  c(0.000001,1),breaks=trans_breaks("log10", function(x)10^x),labels =   trans_format("log10", math_format(10^.x))) + 
+  scale_x_log10(limits =  c(0.000001,1),breaks=trans_breaks("log10", function(x)10^x),labels =   trans_format("log10", math_format(10^.x))) +
+  xlab("gut") + ylab("blood") 
+
+print(dfPlot)
+
+#example
+colnames(HC_UC)
+[1] "Sum..Templates."             "Present.In"                  "C01_Blood_control"           "C01_Tissue_control"          "C02_Blood_control"           "C02_Tissue_control"         
+[7] "C03_Blood_control"           "C03_Tissue_control"          "C04_Blood_control"           "C04_Tissue_control"          "P01_Blood_mild_disease"      "P01_Tissue_mild_disease"    
+[13] "P02_Blood_mild_disease"      "P02_Tissue_mild_disease"     "P03_Blood_moderate_disease"  "P03_Tissue_moderate_disease" "P04_Blood_moderate_disease"  "P04_Tissue_moderate_disease"
+[19] "P05_Blood_moderate_disease"  "P05_Tissue_moderate_disease" "P06_Blood_moderate_disease"  "P06_Tissue_moderate_disease" "P07_Blood_severe_disease"    "P07_Tissue_severe_disease"  
+[25] "P08_Blood_severe_disease"    "P08_Tissue_severe_disease"   "P09_Blood_severe_disease"    "P09_Tissue_severe_disease" 
+data <- HC_UC[,c(15,16)]
+data <- normalize(data)
+data <- data[which(rowSums(data) > 0),]
+data$Type <- NA
+data[(data$P03_Blood_moderate_disease>0) & (data$P03_Tissue_moderate_disease == 0), c("Type")] <- c("Blood_Only")
+data[(data$P03_Blood_moderate_disease == 0) & (data$P03_Tissue_moderate_disease>0), c("Type")] <- c("ileum_Only")
+data[(data$P03_Blood_moderate_disease>0) & (data$P03_Tissue_moderate_disease>0), c("Type")] <- c("Shared")
+SharedinGut <- sum(data[data$Type == c("Shared"),c("P03_Tissue_moderate_disease")])/sum(data[,c("P03_Tissue_moderate_disease")])*100
+data[, c("Blood")] <- data[, c("P03_Blood_moderate_disease")]
+data[, c("Tissue")] <- data[, c("P03_Tissue_moderate_disease")]
+data[data$P03_Blood_moderate_disease == 0, c("Blood")] <- 0.000001
+data[data$P03_Tissue_moderate_disease == 0, c("Tissue")] <- 0.000001
+
 
 color <- c("#F08080","#90EE90","#ADD8E6")
 
