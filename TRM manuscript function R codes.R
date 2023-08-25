@@ -115,7 +115,7 @@ gut <- rownames(Pt20_new[Pt20_new[,11]>0, ])
 donor <- rownames(Pt20_new[Pt20_new[,3]>0|Pt20_new[,4]>0|Pt20_new[,5]>0|Pt20_new[,6]>0, ])
 matrix <- Share(data, lymphoid, gut, donor)
 
-#Fig.2B Fig. 5A, Fig.5B, Table S4, Table S6
+#Fig.2B Fig. 5A, Fig.5B, Table S4, Table S10
 Share_v1 <- function(data, A, B, donor){
   l <- ncol(data)
   matrix <- matrix(nrow = l, ncol = 12)  
@@ -429,7 +429,7 @@ for (m in 1:ncol(matrix)){
   }
 }
 
-#Fig.3C Fig.4D 4E Fig. S9B
+#Fig.3C Fig.4D 4E Fig. S10B
 cosine <- function(p, q){
   l <- length(p)
   a <- 0
@@ -444,7 +444,7 @@ cosine <- function(p, q){
   return(d)
 }
 
-#Fig.4B 4C Fig.S8 Fig.S9A
+#Fig.4B 4C Fig.S8 Fig.S10A
 data <- data[,c(ileum, colon,native_colon)]
 
 ileum_only <- rownames(data[data$ileum >0 & (data$colon == 0 & data$native_colon == 0), ])
@@ -469,7 +469,7 @@ matrix[1,7] <- sum(data[native_only, 3])
 matrix[1,8] <- sum(data[c(colon_native_colon_share, ileum_native_colon_share), 3])
 matrix[1,9] <- sum(data[triple_share, 3])
 
-#HvG/NonHvG define in Fig.5 & Fig.S10
+#HvG/NonHvG define in Fig.5 & Fig.S11
 rcd4 <-  data[,c("R4U","R4L")]
 rcd4 <-  normalize(rcd4)
 rCD4HVG <-  rownames(rcd4[rcd4[,2]>0.00002 & rcd4[,2] > rcd4[,1]*2,])
@@ -491,10 +491,308 @@ CD4NonHVG <- setdiff(rCD4NonHVG,c(rCD4HVG,rCD4GVH,rCD4NonGVH,rCD8HVG,rCD8NonHVG,
 CD8HVG <- setdiff(rCD8HVG,c(rCD4NonHVG,rCD4GVH,rCD4NonGVH,rCD4HVG,rCD8NonHVG,rCD8GVH,rCD8NonGVH))
 CD8NonHVG <- setdiff(rCD8NonHVG,c(rCD4HVG,rCD4GVH,rCD4NonGVH,rCD8HVG,rCD4NonHVG,rCD8GVH,rCD8NonGVH))
 
-#ITx pts bulk sequencing data match path_data in Fig.5 & Fig.S10
+#ITx pts bulk sequencing data match path_data in Fig.5 & Fig.S11
 library(dplyr)
 library(tidyverse)
 data <- unique(left_join(data, path_data))
+
+#Fig. S8
+library(Seurat)
+
+#read data
+mj026_data <- Read10X(data.dir = "/Users/MJ26")
+mj027_data <- Read10X(data.dir = "/Users/MJ27")
+mj028_data <- Read10X(data.dir = "/Users/MJ28")
+
+#wash data
+mj026_me <- CreateSeuratObject(counts = mj026_data, project = "Pt21_Pre_Spl", min.cells = 5)
+mj026_me$pos <- "Pt21_Pre_Spl"
+mj026_me$mt <- PercentageFeatureSet(mj026_me, pattern = "^MT-")
+mj026_me_Q1 = quantile(mj026_me$nFeature_RNA)[2]
+mj026_me_Q3 = quantile(mj026_me$nFeature_RNA)[4]
+mj026_me_interQ = (mj026_me_Q3-mj026_me_Q1)*1.5
+mj026_me_upperb = mj026_me_Q3 + mj026_me_interQ
+mj026_me_lowerb = mj026_me_Q1 - mj026_me_interQ
+mj026_me <- subset(mj026_me, subset = nFeature_RNA > mj026_me_lowerb & nFeature_RNA < mj026_me_upperb  & mt < 15)
+
+mj027_me <- CreateSeuratObject(counts = mj027_data, project = "Pt21_Pre_IEL", min.cells = 5)
+mj027_me$pos <- "Pt21_Pre_IEL"
+mj027_me$mt <- PercentageFeatureSet(mj027_me, pattern = "^MT-")
+mj027_me_Q1 = quantile(mj027_me$nFeature_RNA)[2]
+mj027_me_Q3 = quantile(mj027_me$nFeature_RNA)[4]
+mj027_me_interQ = (mj027_me_Q3-mj027_me_Q1)*1.5
+mj027_me_upperb = mj027_me_Q3 + mj027_me_interQ
+mj027_me_lowerb = mj027_me_Q1 - mj027_me_interQ
+mj027_me <- subset(mj027_me, subset = nFeature_RNA > mj027_me_lowerb & nFeature_RNA < mj027_me_upperb  & mt < 15)
+
+mj028_me <- CreateSeuratObject(counts = mj028_data, project = "Pt21_Pre_LPL", min.cells = 5)
+mj028_me$pos <- "Pt21_Pre_LPL"
+mj028_me$mt <- PercentageFeatureSet(mj028_me, pattern = "^MT-")
+mj028_me_Q1 = quantile(mj028_me$nFeature_RNA)[2]
+mj028_me_Q3 = quantile(mj028_me$nFeature_RNA)[4]
+mj028_me_interQ = (mj028_me_Q3-mj028_me_Q1)*1.5
+mj028_me_upperb = mj028_me_Q3 + mj028_me_interQ
+mj028_me_lowerb = mj028_me_Q1 - mj028_me_interQ
+mj028_me <- subset(mj028_me, subset = nFeature_RNA > mj028_me_lowerb & nFeature_RNA < mj028_me_upperb  & mt < 15)
+
+#combine data
+ifnb.list_pre <- list(mj026_me, mj027_me, mj028_me)
+
+ifnb.list_pre <- lapply(X = ifnb.list_pre, FUN = function(x) {
+  x <- NormalizeData(x)
+  x <- FindVariableFeatures(x, selection.method = "vst", nfeatures = 20000)
+})
+
+features_pre <- SelectIntegrationFeatures(object.list = ifnb.list_pre, nfeatures = 20000)
+
+immune.anchors_pre <- FindIntegrationAnchors(object.list = ifnb.list_pre, anchor.features = features_pre)
+immune.combined_pre <- IntegrateData(anchorset = immune.anchors_pre)
+
+DefaultAssay(immune.combined_pre) <- "integrated"
+
+#Fig. S8a
+DimPlot(immune.combined_pre, reduction = "umap")
+
+#Fig. S8b
+DoHeatmap(immune.combined_pre, features = c("CD3E", "CD4", "CD8A", "CD8B", "TRDC",
+                                            "CD69", "ITGAE", "ITGA1", "CXCR6", "RUNX3", "PRDM1", 
+                                            "CCR7", "KLF2", "S1PR1", "SELL"),
+          size = 5, angle = 0, hjust = 0.5) +
+  NoLegend()
+
+#Fig. S8c & Fig. S8d
+mj26_contig <- read.csv("~/Desktop/MJ26/all_contig_annotations.csv")
+mj27_contig <- read.csv("~/Desktop/all_contig_annotations.csv")
+mj28_contig <- read.csv("~/Desktop/all_contig_annotations.csv")
+Pt21_new_truncted <- read.csv("~/Desktop/bulk sequencing/Pt21_new_truncted.csv")
+ITx_Pt21_aamatch<- read.csv("~/Desktop/bulk sequencing/ITx_Pt21_aamatch.csv")
+
+#shared defined from 10X TCR
+Pt21_preSpl <- mj26_contig[mj26_contig$chain == c("TRB") & mj26_contig$productive == c("true") & mj26_contig$is_cell == c("true") & mj26_contig$high_confidence == c("true"),
+                           c("barcode","v_gene","j_gene","cdr3")]
+Pt21_preIEL <- mj27_contig[mj27_contig$chain == c("TRB") & mj27_contig$productive == c("true") & mj27_contig$is_cell == c("true") & mj27_contig$high_confidence == c("true"),
+                           c("barcode","v_gene","j_gene","cdr3")]
+Pt21_preLPL <- mj28_contig[mj28_contig$chain == c("TRB") & mj28_contig$productive == c("true") & mj28_contig$is_cell == c("true") & mj28_contig$high_confidence == c("true"),
+                           c("barcode","v_gene","j_gene","cdr3")]
+
+#shared defined from bulk TCR
+library(tidyverse)
+
+bulk_gut <- rownames(Pt21_new_truncted[Pt21_new_truncted[,11]>0,])
+bulk_spl <- rownames(Pt21_new_truncted[Pt21_new_truncted[,7]>0|Pt21_new_truncted[,8]>0|Pt21_new_truncted[,9]>0|Pt21_new_truncted[,10]>0,] )
+
+ITx_Pt21_aamatch_pre <- ITx_Pt21_aamatch[ITx_Pt21_aamatch$sample_name %in% c("Pt21_Pre_Recipient_CD4_CFSElo", "Pt21_Pre_Recipient_CD4_unstim",              
+                                                                             "Pt21_Pre_Recipient_CD8_CFSElo", "Pt21_Pre_Recipient_CD8_unstim",
+                                                                             "Pt21_MVTx_POD0_recip_ileum_Bx"),]
+bulk_Gut <- ITx_Pt21_aamatch_pre[ITx_Pt21_aamatch_pre$rearrangement %in% bulk_gut, c("amino_acid", "v_gene", "j_gene")]
+bulk_Gut <- unique(bulk_Gut)
+
+bulk_Gut <- bulk_Gut %>%
+  mutate(v_gene = str_remove_all(.$v_gene, "C")) %>%
+  mutate(j_gene = str_remove_all(.$j_gene, "C"))
+
+for (n in 1:nrow(bulk_Gut)) {
+  if(bulk_Gut[n,2] %in% c("unresolved")){bulk_Gut[n,2] <- NA}
+  else
+  {
+    bulk_Gut[n,2] <- gsub("V01-", "V1-", bulk_Gut[n,2])
+    bulk_Gut[n,2] <- gsub("V02-", "V2-", bulk_Gut[n,2])
+    bulk_Gut[n,2] <- gsub("V03-", "V3-", bulk_Gut[n,2])
+    bulk_Gut[n,2] <- gsub("V04-", "V4-", bulk_Gut[n,2])
+    bulk_Gut[n,2] <- gsub("V05-", "V5-", bulk_Gut[n,2])
+    bulk_Gut[n,2] <- gsub("V06-", "V6-", bulk_Gut[n,2])
+    bulk_Gut[n,2] <- gsub("V07-", "V7-", bulk_Gut[n,2])
+    bulk_Gut[n,2] <- gsub("V08-", "V8-", bulk_Gut[n,2])
+    bulk_Gut[n,2] <- gsub("V09-", "V9-", bulk_Gut[n,2])
+  }
+}
+
+for (n in 1:nrow(bulk_Gut)) {
+  bulk_Gut[n,2] <- gsub("-01", "-1", bulk_Gut[n,2])
+  bulk_Gut[n,2] <- gsub("-02", "-2", bulk_Gut[n,2])
+  bulk_Gut[n,2] <- gsub("-03", "-3", bulk_Gut[n,2])
+  bulk_Gut[n,2] <- gsub("-04", "-4", bulk_Gut[n,2])
+  bulk_Gut[n,2] <- gsub("-05", "-5", bulk_Gut[n,2])
+  bulk_Gut[n,2] <- gsub("-06", "-6", bulk_Gut[n,2])
+  bulk_Gut[n,2] <- gsub("-07", "-7", bulk_Gut[n,2])
+  bulk_Gut[n,2] <- gsub("-08", "-8", bulk_Gut[n,2])
+  bulk_Gut[n,2] <- gsub("-09", "-9", bulk_Gut[n,2])
+}
+
+bulk_Gut[bulk_Gut$v_gene %in% c("TRBVA-or09_02"), 2] <- c("TRBVAor9-2")
+
+for (n in 1:nrow(bulk_Gut)) {
+  if(bulk_Gut[n,3] %in% c("unresolved")){bulk_Gut[n,3] <- NA}
+  else
+  {
+    bulk_Gut[n,3] <- gsub("J01-", "J1-", bulk_Gut[n,3])
+    bulk_Gut[n,3] <- gsub("J02-", "J2-", bulk_Gut[n,3])
+  }
+}
+
+for (n in 1:nrow(bulk_Gut)) {
+  bulk_Gut[n,3] <- gsub("-01", "-1", bulk_Gut[n,3])
+  bulk_Gut[n,3] <- gsub("-02", "-2", bulk_Gut[n,3])
+  bulk_Gut[n,3] <- gsub("-03", "-3", bulk_Gut[n,3])
+  bulk_Gut[n,3] <- gsub("-04", "-4", bulk_Gut[n,3])
+  bulk_Gut[n,3] <- gsub("-05", "-5", bulk_Gut[n,3])
+  bulk_Gut[n,3] <- gsub("-06", "-6", bulk_Gut[n,3])
+  bulk_Gut[n,3] <- gsub("-07", "-7", bulk_Gut[n,3])
+}
+
+colnames(bulk_Gut) <- c("cdr3", "v_gene", "j_gene")
+
+aaa <- mj26_contig[,c("barcode", "v_gene", "j_gene", "cdr3")]
+bulk_Gut <- left_join(bulk_Gut, aaa)
+bulk_Gut <- bulk_Gut[!is.na(bulk_Gut$barcode),]
+bulk_Gut <- unique(paste0(bulk_Gut$barcode, "_1"))
+
+bulk_Spl <- ITx_Pt21_aamatch_pre[ITx_Pt21_aamatch_pre$rearrangement %in% bulk_spl, c("amino_acid", "v_gene", "j_gene")]
+bulk_Spl <- unique(bulk_Spl)
+
+bulk_Spl <- bulk_Spl %>%
+  mutate(v_gene = str_remove_all(.$v_gene, "C")) %>%
+  mutate(j_gene = str_remove_all(.$j_gene, "C"))
+
+for (n in 1:nrow(bulk_Spl)) {
+  if(bulk_Spl[n,2] %in% c("unresolved")){bulk_Spl[n,2] <- NA}
+  else
+  {
+    bulk_Spl[n,2] <- gsub("V01-", "V1-", bulk_Spl[n,2])
+    bulk_Spl[n,2] <- gsub("V02-", "V2-", bulk_Spl[n,2])
+    bulk_Spl[n,2] <- gsub("V03-", "V3-", bulk_Spl[n,2])
+    bulk_Spl[n,2] <- gsub("V04-", "V4-", bulk_Spl[n,2])
+    bulk_Spl[n,2] <- gsub("V05-", "V5-", bulk_Spl[n,2])
+    bulk_Spl[n,2] <- gsub("V06-", "V6-", bulk_Spl[n,2])
+    bulk_Spl[n,2] <- gsub("V07-", "V7-", bulk_Spl[n,2])
+    bulk_Spl[n,2] <- gsub("V08-", "V8-", bulk_Spl[n,2])
+    bulk_Spl[n,2] <- gsub("V09-", "V9-", bulk_Spl[n,2])
+  }
+}
+
+for (n in 1:nrow(bulk_Spl)) {
+  bulk_Spl[n,2] <- gsub("-01", "-1", bulk_Spl[n,2])
+  bulk_Spl[n,2] <- gsub("-02", "-2", bulk_Spl[n,2])
+  bulk_Spl[n,2] <- gsub("-03", "-3", bulk_Spl[n,2])
+  bulk_Spl[n,2] <- gsub("-04", "-4", bulk_Spl[n,2])
+  bulk_Spl[n,2] <- gsub("-05", "-5", bulk_Spl[n,2])
+  bulk_Spl[n,2] <- gsub("-06", "-6", bulk_Spl[n,2])
+  bulk_Spl[n,2] <- gsub("-07", "-7", bulk_Spl[n,2])
+  bulk_Spl[n,2] <- gsub("-08", "-8", bulk_Spl[n,2])
+  bulk_Spl[n,2] <- gsub("-09", "-9", bulk_Spl[n,2])
+}
+
+bulk_Spl[bulk_Spl$v_gene %in% c("TRBVA-or09_02"), 2] <- c("TRBVAor9-2")
+bulk_Spl[bulk_Spl$v_gene %in% c("TRBV20-or09_02"), 2] <- c("TRBV20or9-2")
+
+for (n in 1:nrow(bulk_Spl)) {
+  if(bulk_Spl[n,3] %in% c("unresolved")){bulk_Spl[n,3] <- NA}
+  else
+  {
+    bulk_Spl[n,3] <- gsub("J01-", "J1-", bulk_Spl[n,3])
+    bulk_Spl[n,3] <- gsub("J02-", "J2-", bulk_Spl[n,3])
+  }
+}
+
+for (n in 1:nrow(bulk_Spl)) {
+  bulk_Spl[n,3] <- gsub("-01", "-1", bulk_Spl[n,3])
+  bulk_Spl[n,3] <- gsub("-02", "-2", bulk_Spl[n,3])
+  bulk_Spl[n,3] <- gsub("-03", "-3", bulk_Spl[n,3])
+  bulk_Spl[n,3] <- gsub("-04", "-4", bulk_Spl[n,3])
+  bulk_Spl[n,3] <- gsub("-05", "-5", bulk_Spl[n,3])
+  bulk_Spl[n,3] <- gsub("-06", "-6", bulk_Spl[n,3])
+  bulk_Spl[n,3] <- gsub("-07", "-7", bulk_Spl[n,3])
+}
+
+colnames(bulk_Spl) <- c("cdr3", "v_gene", "j_gene")
+
+bbb <- mj27_contig[,c("barcode", "v_gene", "j_gene", "cdr3")]
+ccc <- mj28_contig[,c("barcode", "v_gene", "j_gene", "cdr3")]
+ddd <- unique(rbind(bbb, ccc))
+bulk_Spl <- left_join(bulk_Spl, ddd)
+bulk_Spl <- bulk_Spl[!is.na(bulk_Spl$barcode),]
+bulk_Spl <- c(unique(paste0(bulk_Spl$barcode, "_2")), unique(paste0(bulk_Spl$barcode, "_3")))
+
+#combine
+shared_spl <- paste0(intersect(Pt21_preSpl$barcode, c(Pt21_preIEL$barcode, Pt21_preLPL$barcode)), "_1")
+shared_gut <- c(paste0(intersect(Pt21_preSpl$barcode, Pt21_preIEL$barcode), "_2"), paste0(intersect(Pt21_preSpl$barcode, Pt21_preLPL$barcode), "_3"))
+only_spl <- paste0(setdiff(Pt21_preSpl$barcode, c(Pt21_preIEL$barcode, Pt21_preLPL$barcode)), "_1")
+only_gut <- c(paste0(setdiff(Pt21_preIEL$barcode, Pt21_preSpl$barcode), "_2"), paste0(setdiff(Pt21_preLPL$barcode, Pt21_preSpl$barcode), "_3"))
+
+aaa <- as.data.frame(as.matrix(immune.combined_pre@active.ident))
+colnames(aaa) <- c("cate")
+aaa$cate <- c("others")
+aaa[rownames(aaa) %in% c(shared_spl, bulk_Gut), c("cate")] <- c("shared_spleen") 
+aaa[rownames(aaa) %in% c(shared_gut, bulk_Spl), c("cate")] <- c("shared_gut") 
+aaa[rownames(aaa) %in% setdiff(only_spl, bulk_Gut), c("cate")] <- c("spleen_only") 
+aaa[rownames(aaa) %in% setdiff(only_gut, bulk_Spl), c("cate")] <- c("gut_only") 
+
+cate <- aaa$cate
+immune.combined_pre$cate <- cate
+
+Idents(immune.combined_pre) <- immune.combined_pre@meta.data$seurat_clusters
+DimPlot(immune.combined_pre, reduction = "umap", pt.size = 0.3, split.by='cate')
+
+table(Idents(immune.combined_pre), immune.combined_pre$cate)
+
+#Fig. S8e
+library(EnhancedVolcano)
+
+deg1 = FindMarkers(immune.combined_pre, 
+                   ident.1 = 'shared_gut', 
+                   ident.2 = 'shared_spleen',
+                   logfc.threshold = 0,
+                   min.pct = 0)
+write.csv(deg1,'~/Desktop/DEG shared_gut vs shared_spleen.csv')
+
+deg2 = FindMarkers(immune.combined_pre,
+                   ident.1 = 'shared_gut', 
+                   ident.2 = 'gut_only',
+                   logfc.threshold = 0,
+                   min.pct = 0)
+write.csv(deg2,'~/Desktop/DEG shared_gut vs gut_only.csv')
+
+deg3 = FindMarkers(immune.combined_pre,
+                   ident.1 = 'shared_spleen', 
+                   ident.2 = 'spleen_only',
+                   logfc.threshold = 0,
+                   min.pct = 0)
+write.csv(deg3,'~/Desktop/DEG shared_spleen vs spleen_only.csv')
+
+EnhancedVolcano(deg1,
+                lab = rownames(deg1),
+                x = 'avg_log2FC',
+                y = 'p_val_adj',
+                pCutoff = 0.05,
+                FCcutoff = 0.5,
+                pointSize = 2.0,
+                labSize = 6.0,
+                xlim = c(-2, 2),
+                drawConnectors = T)
+
+EnhancedVolcano(deg2,
+                lab = rownames(deg2),
+                x = 'avg_log2FC',
+                y = 'p_val_adj',
+                pCutoff = 0.05,
+                FCcutoff = 0.5,
+                pointSize = 2.0,
+                labSize = 6.0,
+                xlim = c(-3.5, 3.5),
+                drawConnectors = T,
+                selectLab = c("GZMB", "GZMA", "IFNG", "PRF1", "NKG7", "GNLY", "KLRB1"))
+
+EnhancedVolcano(deg3,
+                lab = rownames(deg3),
+                x = 'avg_log2FC',
+                y = 'p_val_adj',
+                pCutoff = 0.05,
+                FCcutoff = 0.5,
+                pointSize = 2.0,
+                labSize = 6.0,
+                xlim = c(-2.5, 2.5),
+                drawConnectors = T,
+                selectLab = c( "CXCR6", "CCR7", "KLF2", "SELL"))
 
 
 ##Thank you!
