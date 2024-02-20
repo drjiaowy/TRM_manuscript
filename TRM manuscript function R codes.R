@@ -496,7 +496,7 @@ library(dplyr)
 library(tidyverse)
 data <- unique(left_join(data, path_data))
 
-#Fig. S8
+#Fig. S9
 library(Seurat)
 
 #read data
